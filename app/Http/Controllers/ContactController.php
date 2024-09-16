@@ -2,14 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ContactController extends Controller
 {
-    public function index() {
-        $contacts = DB::table('contacts')->get();
+    public function index( Request $request )
+    {
+        $sort_order   = $request->get('sort');
+        $search_query = $request->get('search' );
+        if ( $sort_order ) {
+            $contacts = DB::table('contacts')->orderBy($sort_order, 'asc')->get();
+        } elseif ( $search_query ) {
+            $contacts = DB::table('contacts')
+                ->where('name', 'like', "%{$search_query}%")
+                ->orWhere('email', 'like', "%{$search_query}%")
+                ->get();
+        } else {
+            $contacts = DB::table('contacts')->get();
+        }
         return view('contacts.index', compact('contacts'));
     }
 
